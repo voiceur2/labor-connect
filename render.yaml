@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: labor-connect-api
+    runtime: node
+    plan: free
+    buildCommand: npm install -g pnpm@10 && pnpm install && pnpm --filter @workspace/api-server run build
+    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false

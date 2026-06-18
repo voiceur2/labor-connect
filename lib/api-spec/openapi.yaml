@@ -1,0 +1,469 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Labor Connect API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: laborers
+    description: Laborer listing operations
+  - name: messages
+    description: Messaging operations
+  - name: stats
+    description: Summary stats
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /laborers:
+    get:
+      operationId: listLaborers
+      tags: [laborers]
+      summary: List all laborers with optional filters
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by name, location, or work type
+        - name: workType
+          in: query
+          schema:
+            type: string
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: lat
+          in: query
+          schema:
+            type: number
+        - name: lng
+          in: query
+          schema:
+            type: number
+        - name: radiusKm
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of laborers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Laborer"
+    post:
+      operationId: createLaborer
+      tags: [laborers]
+      summary: Register as a laborer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LaborerInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Laborer"
+
+  /laborers/{id}:
+    get:
+      operationId: getLaborer
+      tags: [laborers]
+      summary: Get laborer profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Laborer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Laborer"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateLaborer
+      tags: [laborers]
+      summary: Update laborer profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LaborerUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Laborer"
+    delete:
+      operationId: deleteLaborer
+      tags: [laborers]
+      summary: Remove a laborer listing (requires phone verification)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: phone
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Must match the registered phone number
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Phone number does not match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [messages]
+      summary: List conversations for a user (by phone number)
+      parameters:
+        - name: phone
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+    post:
+      operationId: createConversation
+      tags: [messages]
+      summary: Start a conversation with a laborer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /conversations/{id}/messages:
+    get:
+      operationId: getMessages
+      tags: [messages]
+      summary: Get all messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      operationId: sendMessage
+      tags: [messages]
+      summary: Send a message in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageInput"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Get summary stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+
+  /work-types:
+    get:
+      operationId: listWorkTypes
+      tags: [laborers]
+      summary: Get list of available work types
+      responses:
+        "200":
+          description: Work types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Laborer:
+      type: object
+      required:
+        - id
+        - name
+        - phone
+        - location
+        - workType
+        - isAvailable
+        - createdAt
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        location:
+          type: string
+        workType:
+          type: string
+        bio:
+          type: ["string", "null"]
+        dailyRate:
+          type: ["number", "null"]
+        lat:
+          type: ["number", "null"]
+        lng:
+          type: ["number", "null"]
+        isAvailable:
+          type: boolean
+        distanceKm:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+
+    LaborerInput:
+      type: object
+      required:
+        - name
+        - phone
+        - location
+        - workType
+      properties:
+        name:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+        location:
+          type: string
+          minLength: 1
+        workType:
+          type: string
+          minLength: 1
+        bio:
+          type: string
+        dailyRate:
+          type: number
+        lat:
+          type: number
+        lng:
+          type: number
+
+    LaborerUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        location:
+          type: string
+        workType:
+          type: string
+        bio:
+          type: string
+        dailyRate:
+          type: number
+        lat:
+          type: number
+        lng:
+          type: number
+        isAvailable:
+          type: boolean
+
+    Conversation:
+      type: object
+      required:
+        - id
+        - laborerId
+        - laborerName
+        - hirerPhone
+        - lastMessage
+        - updatedAt
+      properties:
+        id:
+          type: integer
+        laborerId:
+          type: integer
+        laborerName:
+          type: string
+        hirerPhone:
+          type: string
+        lastMessage:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+
+    ConversationInput:
+      type: object
+      required:
+        - laborerId
+        - hirerPhone
+      properties:
+        laborerId:
+          type: integer
+        hirerPhone:
+          type: string
+
+    Message:
+      type: object
+      required:
+        - id
+        - conversationId
+        - senderPhone
+        - content
+        - createdAt
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        senderPhone:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+
+    MessageInput:
+      type: object
+      required:
+        - senderPhone
+        - content
+      properties:
+        senderPhone:
+          type: string
+        content:
+          type: string
+
+    Stats:
+      type: object
+      required:
+        - totalLaborers
+        - availableLaborers
+        - totalWorkTypes
+        - topWorkTypes
+      properties:
+        totalLaborers:
+          type: integer
+        availableLaborers:
+          type: integer
+        totalWorkTypes:
+          type: integer
+        topWorkTypes:
+          type: array
+          items:
+            type: object
+            required:
+              - workType
+              - count
+            properties:
+              workType:
+                type: string
+              count:
+                type: integer

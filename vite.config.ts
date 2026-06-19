@@ -4,15 +4,10 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-// This config is used by the Replit dev server.
-// Source lives at the workspace root (src/, index.html).
-// The root vite.config.ts is used by Vercel for production builds.
-
-const port = Number(process.env.PORT ?? "18354");
+const port = Number(process.env.PORT ?? "3000");
 const basePath = process.env.BASE_PATH ?? "/";
 
 export default defineConfig(async () => ({
-  root: path.resolve(import.meta.dirname, "../.."),
   base: basePath,
   plugins: [
     react(),
@@ -24,7 +19,7 @@ export default defineConfig(async () => ({
           (
             await import("@replit/vite-plugin-cartographer")
           ).cartographer({
-            root: path.resolve(import.meta.dirname, "../.."),
+            root: path.resolve(import.meta.dirname),
           }),
           (await import("@replit/vite-plugin-dev-banner")).devBanner(),
         ]
@@ -32,13 +27,13 @@ export default defineConfig(async () => ({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "../../src"),
-      "@assets": path.resolve(import.meta.dirname, "../../attached_assets"),
+      "@": path.resolve(import.meta.dirname, "src"),
+      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
     },
     dedupe: ["react", "react-dom"],
   },
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
     sourcemap: false,
   },
@@ -51,7 +46,7 @@ export default defineConfig(async () => ({
     host: "0.0.0.0",
     allowedHosts: true,
     fs: {
-      strict: false,
+      strict: true,
     },
   },
   preview: {

@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm --filter @workspace/labor-connect run build",
-  "outputDirectory": "artifacts/labor-connect/dist/public",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "framework": null,
   "rewrites": [

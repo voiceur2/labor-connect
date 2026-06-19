@@ -15,11 +15,11 @@ paths = [ "/" ]
 localPort = 18354
 
 [services.development]
-run = "pnpm --filter @workspace/labor-connect run dev"
+run = "pnpm run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/labor-connect", "run", "build" ]
-publicDir = "artifacts/labor-connect/dist/public"
+build = [ "pnpm", "run", "build" ]
+publicDir = "dist"
 serve = "static"
 
 [[services.production.rewrites]]

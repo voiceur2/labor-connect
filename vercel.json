@@ -1,0 +1,1 @@
+{"builds": [{"src": "artifacts/labor-connect/package.json", "use": "@vercel/node"}]}

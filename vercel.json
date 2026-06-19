@@ -1,3 +1,8 @@
 {
-  "rootDirectory": "artifacts/labor-connect"
+  "builds": [
+    {
+      "src": "artifacts/labor-connect/package.json",
+      "use": "@vercel/static-build"
+    }
+  ]
 }
